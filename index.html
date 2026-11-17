@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ghost</title>
+</head>
+<body bgcolor="#000000" text="#FFFFFF">
+
+    <!-- Anchor tags placed side by side -->
+    <a href="?path=FSD">FSD</a> 
+    <a href="?path=DAA">DAA</a> 
+    <a href="?path=CN">CN</a> 
+    <a href="?path=OS">OS</a>
+
+    <hr>
+    
+    <!-- This is where the file list or code will appear -->
+    <div id="display">
+        <p>Welcome. Select a folder above.</p>
+    </div>
+
+    <script>
+        // --- CONFIGURATION (Hardcoded for your repo) ---
+        const GITHUB_USER = "harshil-kamc";
+        const GITHUB_REPO = "ghost";
+        const BRANCH = "main"; 
+        const BASE_DIR = "public"; // Your files are inside the public folder
+
+        const urlParams = new URLSearchParams(window.location.search);
+        // The path parameter will look like "FSD/Part-1_React_JS/App.js" or "DAA/SET-1"
+        const currentPath = urlParams.get('path');
+        const displayDiv = document.getElementById('display');
+
+        // If no path is selected, show the home screen
+        if (!currentPath) {
+            // Do nothing, the welcome text is already there.
+        } 
+        // IF A FILE IS CLICKED (Show it like Notepad)
+        else if (currentPath.includes('.')) {
+            // Construct the raw URL to fetch the file content
+            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${BASE_DIR}/${currentPath}`;
+            
+            fetch(rawUrl)
+                .then(response => {
+                    if(!response.ok) throw new Error("File not found");
+                    return response.text();
+                })
+                .then(text => {
+                    // Create the "Go Back" link by removing the filename from the path
+                    const parentPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                    displayDiv.innerHTML = `
+                        <h3>File: ${currentPath}</h3>
+                        <a href="?path=${parentPath}">[Go Back]</a><br><br>
+                        <pre style="font-family: monospace;">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+                    `;
+                })
+                .catch(err => {
+                    displayDiv.innerHTML = `<p>Error loading file. Check if it exists in your repo.</p>`;
+                });
+        } 
+        // IF A FOLDER IS CLICKED (List the files inside)
+        else {
+            // Use GitHub API to get the list of files
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${BASE_DIR}/${currentPath}?ref=${BRANCH}`;
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Create a "Go Back" link
+                    const parentPath = currentPath.includes('/') ? currentPath.substring(0, currentPath.lastIndexOf('/')) : '';
+                    let html = `<h3>Directory: /${BASE_DIR}/${currentPath}</h3><hr>`;
+                    html += `<a href="?path=${parentPath}">[Go Up]</a><br><br>`;
+                    
+                    if (data.length === 0 || data.message) {
+                        html += `<p>No files found (or API rate limit exceeded).</p>`;
+                    } else {
+                        data.forEach(file => {
+                            // If it's a folder, add a slash to the end
+                            if (file.type === 'dir') {
+                                html += `<a href="?path=${currentPath}/${file.name}">[DIR] ${file.name}</a><br>`;
+                            } else {
+                                html += `<a href="?path=${currentPath}/${file.name}">${file.name}</a><br>`;
+                            }
+                        });
+                    }
+                    displayDiv.innerHTML = html;
+                })
+                .catch(err => {
+                    displayDiv.innerHTML = `<p>Error loading directory. GitHub API rate limit might be reached.</p>`;
+                });
+        }
+    </script>
+</body>
+</html>
