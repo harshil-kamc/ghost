@@ -13,76 +13,83 @@
 
     <hr>
 
-    
+    <!-- Empty div where the explorer will load -->
+    <div id="display"></div>
 
     <script>
-        // --- CONFIGURATION (Hardcoded for your repo) ---
         const GITHUB_USER = "harshil-kamc";
         const GITHUB_REPO = "ghost";
         const BRANCH = "main"; 
-        const BASE_DIR = "public"; // Your files are inside the public folder
+        const BASE_DIR = "public"; 
 
         const urlParams = new URLSearchParams(window.location.search);
-        // The path parameter will look like "FSD/Part-1_React_JS/App.js" or "DAA/SET-1"
         const currentPath = urlParams.get('path');
         const displayDiv = document.getElementById('display');
 
-        // If no path is selected, show the home screen
-        if (!currentPath) {
-            // Do nothing, the welcome text is already there.
-        } 
-        // IF A FILE IS CLICKED (Show it like Notepad)
-        else if (currentPath.includes('.')) {
-            // Construct the raw URL to fetch the file content
-            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${BASE_DIR}/${currentPath}`;
+        // Function to generate the clickable breadcrumb path
+        function getBreadcrumb(path) {
+            // Always start with the root link
+            let breadcrumb = `<a href="./">root</a>`;
             
-            fetch(rawUrl)
-                .then(response => {
-                    if(!response.ok) throw new Error("File not found");
-                    return response.text();
-                })
-                .then(text => {
-                    // Create the "Go Back" link by removing the filename from the path
-                    const parentPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
-                    displayDiv.innerHTML = `
-                        <h3>File: ${currentPath}</h3>
-                        <a href="?path=${parentPath}">[Go Back]</a><br><br>
-                        <pre style="font-family: monospace;">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
-                    `;
-                })
-                .catch(err => {
-                    displayDiv.innerHTML = `<p>Error loading file. Check if it exists in your repo.</p>`;
-                });
-        } 
-        // IF A FOLDER IS CLICKED (List the files inside)
-        else {
-            // Use GitHub API to get the list of files
+            if (!path) return breadcrumb;
+
+            // Split "FSD/1.1_Components" into an array
+            const parts = path.split('/');
+            let accumulatedPath = "";
+
+            // Build the path piece by piece
+            parts.forEach(part => {
+                accumulatedPath += (accumulatedPath === "" ? part : "/" + part);
+                breadcrumb += ` > <a href="?path=${accumulatedPath}">${part}</a>`;
+            });
+
+            return breadcrumb;
+        }
+
+        if (currentPath) {
+            // Ask GitHub API what is at this path
             const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${BASE_DIR}/${currentPath}?ref=${BRANCH}`;
             
             fetch(apiUrl)
-                .then(response => response.json())
+                .then(response => {
+                    if(!response.ok) throw new Error("Path not found");
+                    return response.json();
+                })
                 .then(data => {
-                    // Create a "Go Back" link
-                    const parentPath = currentPath.includes('/') ? currentPath.substring(0, currentPath.lastIndexOf('/')) : '';
-                    let html = `<h3>Directory: /${BASE_DIR}/${currentPath}</h3><hr>`;
-                    html += `<a href="?path=${parentPath}">[Go Up]</a><br><br>`;
-                    
-                    if (data.length === 0 || data.message) {
-                        html += `<p>No files found (or API rate limit exceeded).</p>`;
-                    } else {
+                    // Generate the breadcrumb path
+                    const breadcrumbHtml = `<h3>${getBreadcrumb(currentPath)}</h3><hr>`;
+
+                    // IF IT IS A FOLDER (API returns an Array)
+                    if (Array.isArray(data)) {
+                        let html = breadcrumbHtml;
+                        
                         data.forEach(file => {
-                            // If it's a folder, add a slash to the end
                             if (file.type === 'dir') {
                                 html += `<a href="?path=${currentPath}/${file.name}">[DIR] ${file.name}</a><br>`;
                             } else {
                                 html += `<a href="?path=${currentPath}/${file.name}">${file.name}</a><br>`;
                             }
                         });
+                        
+                        if (data.length === 0) {
+                            html += `<p>[Empty Folder]</p>`;
+                        }
+                        
+                        displayDiv.innerHTML = html;
+                    } 
+                    // IF IT IS A FILE (API returns an Object with download_url)
+                    else if (data && data.type === 'file') {
+                        fetch(data.download_url)
+                            .then(res => res.text())
+                            .then(text => {
+                                let html = breadcrumbHtml;
+                                html += `<pre style="font-family: monospace;">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
+                                displayDiv.innerHTML = html;
+                            });
                     }
-                    displayDiv.innerHTML = html;
                 })
                 .catch(err => {
-                    displayDiv.innerHTML = `<p>Error loading directory. GitHub API rate limit might be reached.</p>`;
+                    displayDiv.innerHTML = `<p>Error loading path: It might not exist.</p>`;
                 });
         }
     </script>
