@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Static Files</title>
+<link rel="stylesheet" href="{{url_for('static',filename='style.css')}}"/>
+</head>
+<body>
+<div>
+<h1>Example of Static Files Loading</h1><hr>
+</div>
+<p id="p1"></p>
+<br/><br/>
+<script src="{{url_for('static',filename='demo.js')}}"></script>
+<button onclick="message('MVSR')">Click</button>
+</body>
+</html>

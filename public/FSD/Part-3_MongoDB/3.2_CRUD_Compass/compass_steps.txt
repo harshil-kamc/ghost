@@ -1,0 +1,1 @@
+Perform basic CRUD operations using MongoDB Compass GUI as described in the manual.

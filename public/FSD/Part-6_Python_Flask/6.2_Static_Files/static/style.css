@@ -1,0 +1,17 @@
+div{
+    background-color: brown;
+    border: 5px solid greenyellow;
+    font-size: x-large;
+    margin-right: 800px;
+}
+h1{
+    font-size: x-large;
+    font-weight: bold;
+    color: floralwhite
+}
+p{
+    color: blue;
+    font-size: xx-large;
+    font-style: italic;
+    font-weight: bold;
+}

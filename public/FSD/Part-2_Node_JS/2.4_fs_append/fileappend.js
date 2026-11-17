@@ -1,0 +1,6 @@
+const file=require("fs")
+const prompt=require("prompt-sync")()
+let fname=prompt("Enter file name to open:")
+let data=prompt("Enter some text:")
+file.appendFileSync(fname,data)
+console.log("Data appended to file")

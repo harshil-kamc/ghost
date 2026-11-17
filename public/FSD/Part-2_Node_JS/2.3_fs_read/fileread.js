@@ -1,0 +1,6 @@
+const file=require("fs")
+const prompt=require("prompt-sync")()
+let fname=prompt("Enter file name:")
+let data=file.readFileSync(fname,"utf-8")
+console.log("File Contents are:\n=====")
+console.log(data)

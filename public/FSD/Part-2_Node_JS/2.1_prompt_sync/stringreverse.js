@@ -1,0 +1,7 @@
+const prompt=require("prompt-sync")()
+let str=prompt("Enter a string:")
+console.log("Given string ="+str)
+let k1=str.split("")
+let k2=k1.reverse()
+let k3=k2.join("")
+console.log("Reversed string="+k3)

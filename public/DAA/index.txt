@@ -1,0 +1,29 @@
+M.V.S.R. ENGINEERING COLLEGE
+(Affiliated to Osmania University, Hyderabad)
+Nadergul (P.O.), Hyderabad-501510
+
+DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING
+Subject : DAA lab
+Acad. Year : 2022-23
+Class : BE VI SEM
+Section : III
+
+INDEX
+S.No. | Name of the Program | Pages (From To) | Date
+
+SET-1
+1 Sort a given set of elements using the Quicksort method and determine the time required to sort the elements.
+2 Implement Merge Sort algorithm to sort a given set of elements and determine the time required.
+3 Implement BFS and traverse a given graph.
+4 Check whether a given graph is connected or not using DFS method.
+5 Implement N Queen's problem using Back Tracking.
+6 Obtain the Topological ordering of vertices in a given digraph.
+
+SET-II: Optimization Problems
+7 Implement Travelling Sales Person Problem using Brute Force Approach.
+8 Implement Knapsack problem using Greedy Method.
+9 From a given vertex in a weighted connected graph, find shortest paths to other vertices using Dijkstra's algorithm.
+10 Find Minimum Cost Spanning Tree of a given undirected graph using Kruskal's algorithm.
+11 Find Minimum Cost Spanning Tree of a given undirected graph using Prim’s algorithm.
+12 Implement All-Pairs Shortest Paths Problem using Floyd's algorithm.
+13 Implement 0/1 Knapsack problem using Dynamic Programming.

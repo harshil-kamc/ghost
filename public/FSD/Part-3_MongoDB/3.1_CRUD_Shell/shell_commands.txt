@@ -1,0 +1,9 @@
+db.createCollection("employee")
+db.employee.insertOne({"_id":123,"ename":"John","salary":5000,"age":35,"gender":"male"});
+db.employee.insertMany([{"_id":124,"ename":"Mary","salary":7000,"age":45,"gender":"female"},{"_id":125,"ename":"Angel","salary":2000,"age":20,"gender":"female"}]);
+db.employee.find();
+db.employee.find({"_id":123});
+db.employee.updateOne({"ename":"John"},{ $set:{"salary":15000}});
+db.employee.updateMany({"age":{$gt:20}},{ $set:{"salary":20000}});
+db.employee.deleteOne({"_id":125});
+db.employee.deleteMany({});

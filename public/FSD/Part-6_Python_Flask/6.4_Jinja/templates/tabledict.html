@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TableDict</title>
+</head>
+<body>
+<h3>An Example of Template Engine:Jinja2</h3><hr/>
+<h2>Displaying Employee dictionary </h2>
+<table border="1">
+<tr><th>Employee Field</th><th>Employee Value</th></tr>
+{% for key,value in result.items()%}
+<tr><td>{{key}}</td><td>{{value}}</td></tr>
+{%endfor%}
+</table>
+</body>
+</html>

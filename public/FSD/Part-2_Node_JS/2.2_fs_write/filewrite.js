@@ -1,0 +1,6 @@
+const file=require("fs")
+const prompt=require("prompt-sync")()
+let fname=prompt("Enter file name to create:")
+let data=prompt("Enter some text:")
+file.writeFileSync(fname,data)
+console.log("File created and data written to file")
