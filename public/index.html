@@ -16,7 +16,7 @@
 
     <!-- The toggle button for the path -->
     <div id="ui-controls" style="display: none; margin-bottom: 10px;">
-        <button id="path-btn" onclick="togglePath()" style="background: transparent; border: 1px solid #606060; color: #B0B0B0; font-family: monospace; cursor: pointer; padding: 4px 8px;">▼ Show Path</button>
+        <button id="path-btn" onclick="togglePath()" style="background: transparent;  color: #B0B0B0; font-family: monospace; cursor: pointer; padding: 4px 8px;">▼</button>
     </div>
     
     <!-- Breadcrumb container (Hidden by default) -->
@@ -43,10 +43,10 @@
             const btn = document.getElementById('path-btn');
             if (pathContainer.style.display === 'none') {
                 pathContainer.style.display = 'block';
-                btn.innerText = '▲ Hide Path';
+                btn.innerText = '▲';
             } else {
                 pathContainer.style.display = 'none';
-                btn.innerText = '▼ Show Path';
+                btn.innerText = '▼';
             }
         }
 
