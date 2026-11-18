@@ -14,9 +14,13 @@
 
     <hr>
 
-    <!-- The toggle button for the path -->
+    <!-- The toggle button for the path (Stealth SVG) -->
     <div id="ui-controls" style="display: none; margin-bottom: 10px;">
-        <button id="path-btn" onclick="togglePath()" style="background: transparent;  color: #B0B0B0; font-family: monospace; cursor: pointer; padding: 4px 8px;">▼</button>
+        <button id="path-btn" onclick="togglePath()" title="Toggle Path" style="background: transparent; border: none; color: #808080; cursor: pointer; padding: 0; outline: none;">
+            <svg id="path-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </button>
     </div>
     
     <!-- Breadcrumb container (Hidden by default) -->
@@ -40,13 +44,15 @@
         // Function to toggle the breadcrumb visibility
         function togglePath() {
             const pathContainer = document.getElementById('path-container');
-            const btn = document.getElementById('path-btn');
+            const icon = document.getElementById('path-icon');
             if (pathContainer.style.display === 'none') {
                 pathContainer.style.display = 'block';
-                btn.innerText = '▲';
+                // Change to Up Arrow
+                icon.innerHTML = '<polyline points="18 15 12 9 6 15"></polyline>';
             } else {
                 pathContainer.style.display = 'none';
-                btn.innerText = '▼';
+                // Change to Down Arrow
+                icon.innerHTML = '<polyline points="6 9 12 15 18 9"></polyline>';
             }
         }
 
@@ -54,11 +60,12 @@
         function copyContent() {
             if (currentFileContent) {
                 navigator.clipboard.writeText(currentFileContent).then(() => {
-                    const btn = document.getElementById('copy-btn');
-                    if(btn) {
-                        const originalText = btn.innerText;
-                        btn.innerText = "[Copied!]";
-                        setTimeout(() => { btn.innerText = originalText; }, 2000);
+                    const icon = document.getElementById('copy-icon');
+                    if(icon) {
+                        const originalSVG = icon.innerHTML;
+                        // Change to Checkmark
+                        icon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+                        setTimeout(() => { icon.innerHTML = originalSVG; }, 2000);
                     }
                 }).catch(err => {
                     alert("Failed to copy: " + err);
@@ -134,13 +141,22 @@
                                 currentFileContent = text;
                                 
                                 const fileName = currentPath.split('/').pop();
-                                let html = `<h3>File: ${fileName}</h3>`;
                                 
-                                // Copy button placed right above the code block
-                                html += `<button id="copy-btn" onclick="copyContent()" style="background: transparent; border: 1px solid #606060; color: #B0B0B0; font-family: monospace; cursor: pointer; padding: 4px 8px; margin-bottom: 15px;">[Copy Code]</button><br>`;
+                                // Use SVG for copy button, no text, completely stealthy
+                                let html = `
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                                        <h3 style="margin: 0;">File: ${fileName}</h3>
+                                        <button id="copy-btn" onclick="copyContent()" title="Copy Code" style="background: transparent; border: none; color: #808080; cursor: pointer; padding: 0; outline: none; display: flex; align-items: center;">
+                                            <svg id="copy-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                `;
                                 
                                 // user-select: text re-enables copying ONLY for the code block
-                                html += `<pre style="font-family: monospace; user-select: text; -webkit-user-select: text;">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
+                                html += `<pre style="font-family: monospace; user-select: text; -webkit-user-select: text; margin-top: 0;">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
                                 
                                 document.getElementById('content-container').innerHTML = html;
                             })
