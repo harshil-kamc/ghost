@@ -13,8 +13,8 @@
 
     <hr>
 
-    <!-- Empty div where the explorer will load -->
-    <div id="display"></div>
+    <!-- The container for the file explorer -->
+    <div id="display"><p>Loading...</p></div>
 
     <script>
         const GITHUB_USER = "harshil-kamc";
@@ -23,73 +23,86 @@
         const BASE_DIR = "public"; 
 
         const urlParams = new URLSearchParams(window.location.search);
-        const currentPath = urlParams.get('path');
+        const rawPath = urlParams.get('path');
         const displayDiv = document.getElementById('display');
 
-        // Function to generate the clickable breadcrumb path
-        function getBreadcrumb(path) {
-            // Always start with the root link
-            let breadcrumb = `<a href="./">root</a>`;
-            
-            if (!path) return breadcrumb;
+        // Clean the path to prevent double slashes
+        const currentPath = rawPath ? rawPath.replace(/^\/+|\/+$/g, '') : null;
 
-            // Split "FSD/1.1_Components" into an array
+        // Function to create the clickable Explorer breadcrumbs
+        function getBreadcrumb(path) {
+            let breadcrumb = `<a href="./">root</a>`;
+            if (!path) return breadcrumb;
+            
             const parts = path.split('/');
             let accumulatedPath = "";
-
-            // Build the path piece by piece
+            
             parts.forEach(part => {
                 accumulatedPath += (accumulatedPath === "" ? part : "/" + part);
-                breadcrumb += ` > <a href="?path=${accumulatedPath}">${part}</a>`;
+                breadcrumb += ` > <a href="?path=${encodeURIComponent(accumulatedPath)}">${part}</a>`;
             });
-
+            
             return breadcrumb;
         }
 
         if (currentPath) {
-            // Ask GitHub API what is at this path
             const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${BASE_DIR}/${currentPath}?ref=${BRANCH}`;
             
             fetch(apiUrl)
                 .then(response => {
-                    if(!response.ok) throw new Error("Path not found");
+                    if (!response.ok) {
+                        if (response.status === 403) throw new Error("GitHub API rate limit exceeded. Please wait an hour.");
+                        if (response.status === 404) throw new Error("Path not found. Make sure your repo is PUBLIC.");
+                        throw new Error("HTTP Error: " + response.status);
+                    }
                     return response.json();
                 })
                 .then(data => {
-                    // Generate the breadcrumb path
                     const breadcrumbHtml = `<h3>${getBreadcrumb(currentPath)}</h3><hr>`;
 
-                    // IF IT IS A FOLDER (API returns an Array)
+                    // IF IT IS A FOLDER
                     if (Array.isArray(data)) {
                         let html = breadcrumbHtml;
                         
+                        // Add "Go Up" link if we are inside a folder
+                        if (currentPath.includes('/')) {
+                            const parentPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                            html += `<a href="?path=${encodeURIComponent(parentPath)}">[.. Go Up]</a><br><br>`;
+                        }
+
                         data.forEach(file => {
+                            const filePath = `${currentPath}/${file.name}`;
                             if (file.type === 'dir') {
-                                html += `<a href="?path=${currentPath}/${file.name}">[DIR] ${file.name}</a><br>`;
+                                html += `<a href="?path=${encodeURIComponent(filePath)}">[DIR] ${file.name}</a><br>`;
                             } else {
-                                html += `<a href="?path=${currentPath}/${file.name}">${file.name}</a><br>`;
+                                html += `<a href="?path=${encodeURIComponent(filePath)}">${file.name}</a><br>`;
                             }
                         });
-                        
-                        if (data.length === 0) {
-                            html += `<p>[Empty Folder]</p>`;
-                        }
+
+                        if (data.length === 0) html += `<p>[Empty Folder]</p>`;
                         
                         displayDiv.innerHTML = html;
                     } 
-                    // IF IT IS A FILE (API returns an Object with download_url)
+                    // IF IT IS A FILE
                     else if (data && data.type === 'file') {
                         fetch(data.download_url)
-                            .then(res => res.text())
+                            .then(res => {
+                                if (!res.ok) throw new Error("Could not fetch raw file content.");
+                                return res.text();
+                            })
                             .then(text => {
                                 let html = breadcrumbHtml;
                                 html += `<pre style="font-family: monospace;">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
                                 displayDiv.innerHTML = html;
+                            })
+                            .catch(err => {
+                                displayDiv.innerHTML = `<p style="color:red;">Error reading file: ${err.message}</p>`;
                             });
                     }
                 })
                 .catch(err => {
-                    displayDiv.innerHTML = `<p>Error loading path: It might not exist.</p>`;
+                    // THIS WILL SHOW THE ERROR ON THE SCREEN SO YOU AREN'T LEFT WITH A BLANK PAGE
+                    displayDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
                 });
         }
     </script>
